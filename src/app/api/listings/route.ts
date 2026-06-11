@@ -1,7 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { mockListings } from '@/lib/mock-data'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { listingSchema, searchQuerySchema } from '@/lib/validation'
 import { sanitizeHtml, sanitizeText, containsSqlInjection } from '@/lib/security'
+
+async function createSupabaseClient() {
+  const cookieStore = await cookies()
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Ignore errors in Server Components
+          }
+        },
+      },
+    }
+  )
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,8 +37,8 @@ export async function GET(request: NextRequest) {
       q: searchParams.get('q') || undefined,
       category: searchParams.get('category') || undefined,
       condition: searchParams.get('condition') || undefined,
-      minPrice: searchParams.get('minPrice') || undefined,
-      maxPrice: searchParams.get('maxPrice') || undefined,
+      minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+      maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
     }
 
     const validationResult = searchQuerySchema.safeParse(rawParams)
@@ -35,37 +60,52 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    let results = [...mockListings]
+    const supabase = await createSupabaseClient()
 
+    // Build query
+    let query = supabase
+      .from('listings')
+      .select('*, profiles(id, full_name, avatar_url, email)')
+      .eq('status', 'active')
+
+    // Apply filters
     if (params.q) {
-      const q = sanitizeText(params.q).toLowerCase()
-      results = results.filter(
-        (l) =>
-          l.title.toLowerCase().includes(q) ||
-          l.description.toLowerCase().includes(q)
-      )
+      const q = sanitizeText(params.q)
+      query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`)
     }
 
     if (params.category && params.category !== 'All') {
-      const category = sanitizeText(params.category)
-      results = results.filter((l) => l.category === category)
+      query = query.eq('category', sanitizeText(params.category))
     }
 
     if (params.condition) {
-      results = results.filter((l) => l.condition === params.condition)
+      query = query.eq('condition', params.condition)
     }
 
     if (params.minPrice !== undefined) {
-      results = results.filter((l) => l.price >= params.minPrice!)
+      query = query.gte('price', params.minPrice)
     }
 
     if (params.maxPrice !== undefined) {
-      results = results.filter((l) => l.price <= params.maxPrice!)
+      query = query.lte('price', params.maxPrice)
+    }
+
+    // Order by newest first
+    query = query.order('created_at', { ascending: false })
+
+    const { data: listings, error } = await query
+
+    if (error) {
+      console.error('Database error:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch listings' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({ 
-      listings: results, 
-      count: results.length,
+      listings: listings || [], 
+      count: listings?.length || 0,
       filters: params 
     })
   } catch (error) {
@@ -79,10 +119,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createSupabaseClient()
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     
     // Validate input with Zod
-    const validationResult = listingSchema.safeParse(body)
+    const validationResult = listingSchema.safeParse({
+      ...body,
+      seller_id: user.id,
+    })
     
     if (!validationResult.success) {
       return NextResponse.json(
@@ -102,23 +157,28 @@ export async function POST(request: NextRequest) {
       title: sanitizeText(data.title),
       description: sanitizeHtml(data.description),
       category: sanitizeText(data.category),
+      seller_id: user.id,
     }
 
-    // In a real app, this would insert into Supabase
-    // const { data: listing, error } = await supabase
-    //   .from('listings')
-    //   .insert(sanitizedData)
-    //   .select()
-    //   .single()
-    //
-    // if (error) {
-    //   return NextResponse.json({ error: error.message }, { status: 500 })
-    // }
+    // Insert into Supabase
+    const { data: listing, error: insertError } = await supabase
+      .from('listings')
+      .insert(sanitizedData)
+      .select()
+      .single()
+
+    if (insertError) {
+      console.error('Insert error:', insertError)
+      return NextResponse.json(
+        { error: insertError.message || 'Failed to create listing' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json(
       { 
         message: 'Listing created successfully', 
-        listing: sanitizedData 
+        listing 
       },
       { status: 201 }
     )

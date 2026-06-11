@@ -11,7 +11,11 @@ import { createClient } from '@/lib/supabase-client'
 export default function SignupPage() {
   const router = useRouter()
   const { addToast } = useToast()
-  const [supabase] = React.useState(() => createClient())
+  const [supabase, setSupabase] = React.useState<ReturnType<typeof createClient> | null>(null)
+
+  React.useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -57,6 +61,11 @@ export default function SignupPage() {
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!supabase) {
+      addToast('Loading authentication...', 'error')
+      return
+    }
     
     if (!validateForm()) {
       addToast('Please fix the errors in the form', 'error')
@@ -107,6 +116,11 @@ export default function SignupPage() {
   }
 
   const handleGoogleSignup = async () => {
+    if (!supabase) {
+      addToast('Loading authentication...', 'error')
+      return
+    }
+    
     setIsLoading(true)
 
     try {

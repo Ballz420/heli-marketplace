@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
@@ -11,7 +11,11 @@ import { createClient } from '@/lib/supabase-client'
 export default function LoginPage() {
   const router = useRouter()
   const { addToast } = useToast()
-  const [supabase] = React.useState(() => createClient())
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
+
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -39,6 +43,11 @@ export default function LoginPage() {
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!supabase) {
+      addToast('Loading authentication...', 'error')
+      return
+    }
     
     if (!validateForm()) {
       addToast('Please fix the errors in the form', 'error')
@@ -69,6 +78,11 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = async () => {
+    if (!supabase) {
+      addToast('Loading authentication...', 'error')
+      return
+    }
+    
     setIsLoading(true)
 
     try {

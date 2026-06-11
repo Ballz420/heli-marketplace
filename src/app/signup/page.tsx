@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase-client'
 export default function SignupPage() {
   const router = useRouter()
   const { addToast } = useToast()
-  const supabase = createClient()
+  const [supabase] = React.useState(() => createClient())
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')

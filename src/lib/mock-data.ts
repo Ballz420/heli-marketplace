@@ -1,0 +1,181 @@
+import { Tables } from './supabase'
+
+export type Listing = Tables<'listings'>
+export type Profile = Tables<'profiles'>
+
+export const mockProfiles: Profile[] = [
+  {
+    id: 'user-1',
+    email: 'alice@example.com',
+    full_name: 'Alice Johnson',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
+    role: 'seller',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'user-2',
+    email: 'bob@example.com',
+    full_name: 'Bob Smith',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob',
+    role: 'seller',
+    created_at: '2024-01-02T00:00:00Z',
+    updated_at: '2024-01-02T00:00:00Z',
+  },
+  {
+    id: 'user-3',
+    email: 'charlie@example.com',
+    full_name: 'Charlie Davis',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie',
+    role: 'buyer',
+    created_at: '2024-01-03T00:00:00Z',
+    updated_at: '2024-01-03T00:00:00Z',
+  },
+]
+
+export const mockListings: Listing[] = [
+  {
+    id: 'listing-1',
+    title: 'Vintage Film Camera - Canon AE-1',
+    description: 'A beautiful vintage Canon AE-1 film camera in excellent working condition. Comes with 50mm f/1.8 lens. Perfect for photography enthusiasts looking to explore film photography.',
+    price: 299.99,
+    status: 'active',
+    condition: 'good',
+    category: 'Electronics',
+    images: [
+      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&h=600&fit=crop',
+    ],
+    seller_id: 'user-1',
+    created_at: '2024-06-01T10:00:00Z',
+    updated_at: '2024-06-01T10:00:00Z',
+  },
+  {
+    id: 'listing-2',
+    title: 'Handcrafted Ceramic Vase Set',
+    description: 'Set of 3 handcrafted ceramic vases in earth tones. Each piece is unique with subtle glaze variations. Perfect for home decor or as a gift.',
+    price: 89.50,
+    status: 'active',
+    condition: 'new',
+    category: 'Home & Garden',
+    images: [
+      'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&h=600&fit=crop',
+    ],
+    seller_id: 'user-2',
+    created_at: '2024-06-02T14:30:00Z',
+    updated_at: '2024-06-02T14:30:00Z',
+  },
+  {
+    id: 'listing-3',
+    title: 'MacBook Pro 14" M3 Pro - 512GB',
+    description: 'Barely used MacBook Pro 14" with M3 Pro chip. 18GB RAM, 512GB SSD. Still under AppleCare+. Includes original box and accessories.',
+    price: 1899.00,
+    status: 'active',
+    condition: 'like_new',
+    category: 'Electronics',
+    images: [
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&h=600&fit=crop',
+    ],
+    seller_id: 'user-1',
+    created_at: '2024-06-03T09:15:00Z',
+    updated_at: '2024-06-03T09:15:00Z',
+  },
+  {
+    id: 'listing-4',
+    title: 'Leather Messenger Bag - Handmade',
+    description: 'Full-grain leather messenger bag, hand-stitched with waxed thread. Features multiple compartments and a padded laptop sleeve. Ages beautifully with use.',
+    price: 245.00,
+    status: 'active',
+    condition: 'new',
+    category: 'Fashion',
+    images: [
+      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&h=600&fit=crop',
+    ],
+    seller_id: 'user-2',
+    created_at: '2024-06-04T11:00:00Z',
+    updated_at: '2024-06-04T11:00:00Z',
+  },
+  {
+    id: 'listing-5',
+    title: 'Mid-Century Modern Armchair',
+    description: 'Authentic mid-century modern armchair in teak wood. Recently reupholstered in premium charcoal fabric. A statement piece for any living room.',
+    price: 650.00,
+    status: 'active',
+    condition: 'good',
+    category: 'Home & Garden',
+    images: [
+      'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&h=600&fit=crop',
+    ],
+    seller_id: 'user-1',
+    created_at: '2024-06-05T16:45:00Z',
+    updated_at: '2024-06-05T16:45:00Z',
+  },
+  {
+    id: 'listing-6',
+    title: 'Rare Vinyl Collection - Jazz Classics',
+    description: 'Collection of 25 rare jazz vinyl records from the 1950s-70s. Includes Miles Davis, John Coltrane, and Thelonious Monk originals. All records graded VG+ or better.',
+    price: 425.00,
+    status: 'active',
+    condition: 'good',
+    category: 'Entertainment',
+    images: [
+      'https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=800&h=600&fit=crop',
+    ],
+    seller_id: 'user-2',
+    created_at: '2024-06-06T08:20:00Z',
+    updated_at: '2024-06-06T08:20:00Z',
+  },
+  {
+    id: 'listing-7',
+    title: 'Mountain Bike - Trek Fuel EX 9.8',
+    description: '2023 Trek Fuel EX 9.8 carbon mountain bike. Size Large. Upgraded dropper post and tubeless setup. Only ridden 200 miles on local trails.',
+    price: 5200.00,
+    status: 'active',
+    condition: 'like_new',
+    category: 'Sports',
+    images: [
+      'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=800&h=600&fit=crop',
+    ],
+    seller_id: 'user-1',
+    created_at: '2024-06-07T13:10:00Z',
+    updated_at: '2024-06-07T13:10:00Z',
+  },
+  {
+    id: 'listing-8',
+    title: 'Abstract Oil Painting - 36x48"',
+    description: 'Original abstract oil painting on canvas by local artist. Bold colors and textured brushwork. Signed and dated. Comes with certificate of authenticity.',
+    price: 780.00,
+    status: 'active',
+    condition: 'new',
+    category: 'Art & Collectibles',
+    images: [
+      'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=600&fit=crop',
+    ],
+    seller_id: 'user-2',
+    created_at: '2024-06-08T10:30:00Z',
+    updated_at: '2024-06-08T10:30:00Z',
+  },
+]
+
+export const categories = [
+  'All',
+  'Electronics',
+  'Home & Garden',
+  'Fashion',
+  'Sports',
+  'Entertainment',
+  'Art & Collectibles',
+  'Books',
+  'Toys & Games',
+  'Automotive',
+  'Other',
+]
+
+export const conditions = [
+  { value: 'new', label: 'New' },
+  { value: 'like_new', label: 'Like New' },
+  { value: 'good', label: 'Good' },
+  { value: 'fair', label: 'Fair' },
+  { value: 'poor', label: 'Poor' },
+]

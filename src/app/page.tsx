@@ -31,7 +31,11 @@ interface Listing {
 export default function HomePage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createClient()
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
+
+  useEffect(() => {
+    setSupabase(createClient())
+  }, [])
 
   useEffect(() => {
     const fetchListings = async () => {

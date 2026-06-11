@@ -41,10 +41,15 @@ export default function HomePage() {
     const fetchListings = async () => {
       try {
         const response = await fetch('/api/listings?limit=6')
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`)
+        }
         const data = await response.json()
         setListings(data.listings || [])
       } catch (error) {
         console.error('Failed to fetch listings:', error)
+        // Don't crash the page if API fails - just show empty state
+        setListings([])
       } finally {
         setIsLoading(false)
       }

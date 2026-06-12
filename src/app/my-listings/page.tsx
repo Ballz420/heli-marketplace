@@ -5,15 +5,13 @@ import Link from 'next/link'
 import { Plus, Pencil, Eye, Archive } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardImage, CardContent, CardTitle, CardBadge } from '@/components/ui/card'
-import { mockListings, mockProfiles } from '@/lib/mock-data'
-
 export default function MyListingsPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'sold'>('all')
 
-  // Simulate current user
-  const currentUserId = 'user-1'
-  const myListings = mockListings.filter(
-    (l) => l.seller_id === currentUserId && (filter === 'all' || l.status === filter)
+  // TODO: Fetch user's listings from Supabase API
+  const myListings: any[] = []
+  const filteredListings = myListings.filter(
+    (l: any) => filter === 'all' || l.status === filter
   )
 
   return (

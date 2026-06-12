@@ -4,12 +4,13 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Upload, X, DollarSign, Tag, FileText, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ProtectedRoute } from '@/components/protected-route'
 import { categories, conditions } from '@/lib/mock-data'
 import { useToast } from '@/components/ui/toast'
 import { listingSchema } from '@/lib/validation'
 import { sanitizeHtml, sanitizeText } from '@/lib/security'
 
-export default function SellPage() {
+function SellPageContent() {
   const router = useRouter()
   const { addToast } = useToast()
 
@@ -319,5 +320,13 @@ export default function SellPage() {
         </div>
       </form>
     </div>
+  )
+}
+
+export default function SellPage() {
+  return (
+    <ProtectedRoute>
+      <SellPageContent />
+    </ProtectedRoute>
   )
 }

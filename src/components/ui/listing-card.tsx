@@ -2,16 +2,35 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { MapPin, Clock, PlusCircle } from 'lucide-react'
+import { Clock, PlusCircle } from 'lucide-react'
 import { Card, CardImage, CardContent, CardTitle, CardPrice, CardBadge } from './card'
-import { Listing, mockProfiles } from '@/lib/mock-data'
+
+interface Listing {
+  id: string
+  title: string
+  description: string
+  price: number
+  category: string
+  condition: string
+  images: string[]
+  seller_id: string
+  created_at: string
+  status?: string
+  updated_at?: string
+  profiles?: {
+    id: string
+    full_name: string
+    avatar_url: string
+    email: string
+  }
+}
 
 interface ListingCardProps {
   listing: Listing
 }
 
 export function ListingCard({ listing }: ListingCardProps) {
-  const seller = mockProfiles.find((p) => p.id === listing.seller_id)
+  const seller = listing.profiles
   const daysAgo = Math.floor(
     (Date.now() - new Date(listing.created_at).getTime()) / (1000 * 60 * 60 * 24)
   )

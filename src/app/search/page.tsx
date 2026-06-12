@@ -1,11 +1,31 @@
 'use client'
 
-import React, { useState, useMemo, Suspense } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { SlidersHorizontal, Search } from 'lucide-react'
 import { ListingCard } from '@/components/ui/listing-card'
 import { Button } from '@/components/ui/button'
-import { mockListings, categories, conditions } from '@/lib/mock-data'
+import { categories, conditions } from '@/lib/mock-data'
+
+interface Listing {
+  id: string
+  title: string
+  description: string
+  price: number
+  category: string
+  condition: string
+  images: string[]
+  seller_id: string
+  created_at: string
+  status?: string
+  updated_at?: string
+  profiles?: {
+    id: string
+    full_name: string
+    avatar_url: string
+    email: string
+  }
+}
 
 function SearchContent() {
   const searchParams = useSearchParams()
@@ -18,30 +38,46 @@ function SearchContent() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
   const [sortBy, setSortBy] = useState('newest')
   const [showFilters, setShowFilters] = useState(false)
+  const [listings, setListings] = useState<Listing[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const filteredListings = useMemo(() => {
-    let results = [...mockListings]
+  // Fetch listings from API
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
 
-    if (query) {
-      const q = query.toLowerCase()
-      results = results.filter(
-        (l) =>
-          l.title.toLowerCase().includes(q) ||
-          l.description.toLowerCase().includes(q)
-      )
+        // Build query parameters
+        const params = new URLSearchParams()
+        if (query) params.append('q', query)
+        if (selectedCategory && selectedCategory !== 'All') params.append('category', selectedCategory)
+        if (selectedCondition && selectedCondition !== 'all') params.append('condition', selectedCondition)
+        if (priceRange[0] > 0) params.append('minPrice', String(priceRange[0]))
+        if (priceRange[1] < 10000) params.append('maxPrice', String(priceRange[1]))
+
+        const response = await fetch(`/api/listings?${params.toString()}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch listings')
+        }
+
+        const data = await response.json()
+        setListings(data.listings || [])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+        setListings([])
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    if (selectedCategory !== 'All') {
-      results = results.filter((l) => l.category === selectedCategory)
-    }
+    fetchListings()
+  }, [query, selectedCategory, selectedCondition, priceRange])
 
-    if (selectedCondition !== 'all') {
-      results = results.filter((l) => l.condition === selectedCondition)
-    }
-
-    results = results.filter(
-      (l) => l.price >= priceRange[0] && l.price <= priceRange[1]
-    )
+  // Sort listings client-side
+  const sortedListings = React.useMemo(() => {
+    let results = [...listings]
 
     switch (sortBy) {
       case 'newest':
@@ -59,7 +95,7 @@ function SearchContent() {
     }
 
     return results
-  }, [query, selectedCategory, selectedCondition, priceRange, sortBy])
+  }, [listings, sortBy])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -181,35 +217,51 @@ function SearchContent() {
 
         {/* Results */}
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-sm text-gray-500">
-              {filteredListings.length} {filteredListings.length === 1 ? 'result' : 'results'}
-              {query && ` for "${query}"`}
-            </p>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-heli-blue"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-            </select>
-          </div>
-
-          {filteredListings.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-              <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-heli-dark mb-2">No results found</h3>
-              <p className="text-gray-500">Try adjusting your filters or search query</p>
-            </div>
-          ) : (
+          {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl h-80 animate-pulse" />
               ))}
             </div>
+          ) : error ? (
+            <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
+              <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-heli-dark mb-2">Error loading listings</h3>
+              <p className="text-gray-500">{error}</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-sm text-gray-500">
+                  {sortedListings.length} {sortedListings.length === 1 ? 'result' : 'results'}
+                  {query && ` for "${query}"`}
+                </p>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-heli-blue"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                </select>
+              </div>
+
+              {sortedListings.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
+                  <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-heli-dark mb-2">No results found</h3>
+                  <p className="text-gray-500">Try adjusting your filters or search query</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {sortedListings.map((listing: Listing) => (
+                    <ListingCard key={listing.id} listing={listing} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

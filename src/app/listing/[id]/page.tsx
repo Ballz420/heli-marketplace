@@ -19,15 +19,14 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { mockListings, mockProfiles } from '@/lib/mock-data'
-
 export default function ListingPage() {
   const params = useParams()
   const router = useRouter()
   const listingId = params.id as string
 
-  const listing = mockListings.find((l) => l.id === listingId)
-  const seller = listing ? mockProfiles.find((p) => p.id === listing.seller_id) : null
+  // TODO: Fetch listing from Supabase API
+  const listing = null
+  const seller = null
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isLiked, setIsLiked] = useState(false)

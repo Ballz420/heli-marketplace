@@ -6,12 +6,11 @@ import { useSearchParams } from 'next/navigation'
 import { CheckCircle, Package, Home, ShoppingBag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { mockListings } from '@/lib/mock-data'
-
 function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const listingId = searchParams.get('id')
-  const listing = listingId ? mockListings.find((l) => l.id === listingId) : null
+  // TODO: Fetch listing from Supabase API
+  const listing = null
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">

@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { ArrowLeft, MapPin, Truck, CreditCard, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { mockListings, mockProfiles } from '@/lib/mock-data'
 import { useToast } from '@/components/ui/toast'
 
 export default function CheckoutPage() {
@@ -15,8 +14,9 @@ export default function CheckoutPage() {
   const { addToast } = useToast()
   const listingId = params.id as string
 
-  const listing = mockListings.find((l) => l.id === listingId)
-  const seller = listing ? mockProfiles.find((p) => p.id === listing.seller_id) : null
+  // TODO: Fetch listing from Supabase API
+  const listing = null
+  const seller = null
 
   const [isProcessing, setIsProcessing] = useState(false)
   const [shippingAddress, setShippingAddress] = useState({

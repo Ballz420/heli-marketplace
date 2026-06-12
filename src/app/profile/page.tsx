@@ -1,13 +1,46 @@
 'use client'
 
 import React from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Package, Heart, Settings, Star, ShoppingBag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { mockProfiles } from '@/lib/mock-data'
+import { useAuth } from '@/lib/auth-context'
 
 export default function ProfilePage() {
-  const currentUser = mockProfiles[0]
+  const router = useRouter()
+  const { profile, isLoading, isAuthenticated } = useAuth()
+
+  // Redirect to login if not authenticated
+  React.useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isLoading, isAuthenticated, router])
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+          <p className="text-center text-gray-500">Loading profile...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error if no profile data
+  if (!profile) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+          <p className="text-center text-gray-500">Unable to load profile. Please try again.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const currentUser = profile
 
   const menuItems = [
     { icon: Package, label: 'My Listings', href: '/my-listings', count: 4 },
